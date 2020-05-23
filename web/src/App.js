@@ -1,4 +1,8 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
+
+import DevItem from './Components/DevItem/index'
+
+import api from './services/api';
 
 import './global.css'; 
 import './App.css'; 
@@ -6,42 +10,103 @@ import './Sidebar.css';
 import './Main.css'; 
 
 function App() {
+
+  const [devs, setDevs] = useState([]);
+
+  const [github_username, setGithubUsername] = useState('');
+  const [techs, setTechs] = useState('');
+  const [latitude, setLatitude] = useState('');
+  const [longitude, setLongitude] = useState('');
+
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        const {latitude, longitude} = position.coords;
+        setLatitude(latitude);
+        setLongitude(longitude);
 
       }, (err) => {
         console.log(err)
       },
       {
-        timeout
+        timeout: 30000
       });
   }, []);
+
+  useEffect(() => {
+    async function loadDevs(){
+      const response = await api.get('devs');
+
+      setDevs(response.data);
+    }
+
+    loadDevs();
+  }, [devs ])
+
+  async function handleAddDev(e) {
+    e.preventDefault();
+
+    const response = await api.post('/devs', {
+      github_username,
+      techs,
+      latitude,
+      longitude
+    });
+    setGithubUsername('');
+    setTechs('');
+    setDevs([...devs, response.data]);
+  }
 
   return (
      <div id='app'>  
         <aside>
           <strong>Cadastrar</strong>
-          <form>
+          <form onSubmit={handleAddDev}>
             <div className='input-block'>   
               <label htmlFor="github_username">Github Username</label>
-              <input name="github_username" id="github_username" required />
+              <input 
+                name="github_username" 
+                id="github_username" 
+                value={github_username}
+                onChange={e => setGithubUsername(e.target.value) }
+                required 
+              />
             </div>
             
             <div className='input-block'>   
               <label htmlFor="techs">Tecnologias</label>
-              <input name="techs" id="techs" required />
+              <input 
+                name="techs" 
+                id="techs" 
+                value={techs}
+                onChange={e => setTechs(e.target.value)}
+                required 
+              />
             </div>
 
             <div className="input-group">
               <div className='input-block'>   
                 <label htmlFor="latitude">Latitude</label>
-                <input name="latitude" id="latitude" required />
+                <input 
+                  type='number' 
+                  name="latitude" 
+                  id="latitude" 
+                  required 
+                  value={latitude}
+                  onChange={e => setLatitude(e.target.value)}
+                />
               </div>
 
               <div className='input-block'>   
                 <label htmlFor="longitude">Longitude</label>
-                <input name="longitude" id="longitude" required />
+                <input 
+                  type='number' 
+                  name="longitude" 
+                  id="longitude" 
+                  required 
+                  value={longitude}
+                  onChange={e => setLongitude(e.target.value)}
+                />
               </div>
               
             </div>
@@ -53,33 +118,13 @@ function App() {
         </aside>
         <main>
           <ul>
-            <li className="dev-item">
-              <header>
-                <img alt="" src="https://avatars3.githubusercontent.com/u/9977351?s=460&u=047a49f140b19181e4c01eca36e1e359b0da36fc&v=4"/>
-                <div className="user-info">
-                  <strong>Melisse Cabral</strong>
-                  <span>ReactJS, ReactNative, NodeJS</span>
-                </div>
-              </header>
-              <p>
-                Desenvolvedora Web Fullstack
-              </p>
-              <a href="https://github.com/melissecabral">Acessar Perfil do Github</a>
-            </li>
-            <li className="dev-item">
-              <header>
-                <img alt="" src="https://avatars3.githubusercontent.com/u/9977351?s=460&u=047a49f140b19181e4c01eca36e1e359b0da36fc&v=4"/>
-                <div className="user-info">
-                  <strong>Melisse Cabral</strong>
-                  <span>ReactJS, ReactNative, NodeJS</span>
-                </div>
-              </header>
-              <p>
-                Desenvolvedora Web Fullstack
-              </p>
-              <a href="https://github.com/melissecabral">Acessar Perfil do Github</a>
-            </li>
-
+            {
+              devs.map(dev => (
+                <DevItem key={dev._id} dev={dev} />
+                )
+              ) 
+            }
+             
           </ul>
         </main>
      </div>

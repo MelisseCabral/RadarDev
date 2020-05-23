@@ -1,4 +1,3 @@
-const axios = require("axios");
 const dev = require("../models/dev");
 const parseStringAsArray = require('../utils/parseStringToArray');
 
@@ -25,8 +24,7 @@ module.exports = {
        })
 
         const techsArray = parseStringAsArray(techs)
-       //filtrar por tech
 
-       return response.json({devs : []})
+       return response.json({devs : []});
     }
 }
