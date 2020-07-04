@@ -1,0 +1,8 @@
+// To create container
+docker build -t name/dockernode [DIRETORY_PATH]
+
+// To start container
+docker run -d name/dockernode 
+
+// To list executing dockers
+docker ps
